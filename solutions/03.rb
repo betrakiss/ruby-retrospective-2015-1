@@ -64,15 +64,18 @@ class PrimeSequence
     @limit = limit
   end
 
-  def each
-    current, total = 2, 0
+  def each(&block)
+    enum_for(:all_primes).
+      lazy.
+      take(@limit).
+      each(&block)
+  end
 
-    while total < @limit
-      if current.prime?
-        yield current
-        total += 1
-      end
+  def all_primes
+    current = 2
 
+    loop do
+      yield current if current.prime?
       current += 1
     end
   end
@@ -87,16 +90,20 @@ class FibonacciSequence
     @second = second
   end
 
-  def each
+  def each(&block)
+    enum_for(:all_fibonacci).
+      lazy.
+      take(@limit).
+      each(&block)
+  end
+
+  def all_fibonacci
     current, previous = @second, @first
-    total = 1
 
-    yield @first
-
-    while total < @limit
+    yield previous
+    loop do
       yield current
       current, previous = current + previous, current
-      total += 1
     end
   end
 end
