@@ -53,8 +53,7 @@ class Integer
     return true if self == 2
     return false if self % 2 == 0 or self < 2
 
-    (3..self-1).step(2) { |current| return false if self % current == 0 }
-    true
+    (3..self ** 0.5).step(2).all? { |n| self % n != 0 }
   end
 end
 
