@@ -3,48 +3,43 @@ class RationalSequence
 
   def initialize(limit)
     @limit = limit
-    @rising, @finished = true, true
-    @num, @denom = 1, 1
   end
 
-  def each
-    current = Rational(@num, @denom)
-    total = [current]
-
-    yield current if @limit != 0
-
-    while total.count < @limit
-      current = iteration(total)
-
-      unless total.include? current
-        yield current
-        total << current
-      end
-    end
+  def each(&block)
+    enum_for(:all_rationals).
+      lazy.
+      select { |n, d| n.gcd(d) == 1}.
+      map { |n, d| Rational(n, d) }.
+      take(@limit).
+      each(&block)
   end
 
-  def iteration(total)
-      if @rising and @finished
-        @num += 1
-        @rising = false
-      elsif @finished
-        @denom += 1
-        @rising = true
+  private
+  def all_rationals
+    numerator = 1
+    denominator = 1
+
+    loop do
+      yield [numerator, denominator]
+
+      numerator += 1
+
+      while numerator > 1
+        yield [numerator, denominator]
+        numerator -= 1
+        denominator += 1
       end
 
-      if @finished
-        @finished = false
-        return Rational(@num, @denom)
+      yield [numerator, denominator]
+
+      denominator += 1
+
+      while denominator > 1
+        yield [numerator, denominator]
+        denominator -= 1
+        numerator += 1
       end
-
-      @num, @denom = generate_parts()
-
-      @finished = true if @num == 1 or @denom == 1
-      Rational(@num, @denom)
     end
-
-  def generate_parts()
-    @rising ? [@num + 1, @denom - 1] : [@num - 1, @denom + 1]
   end
 end
 
