@@ -1,43 +1,47 @@
 def move(snake, direction)
-  moved_snake = grow(snake, direction)
-  moved_snake.shift
-  moved_snake
+  grow(snake, direction).drop(1)
 end
 
 def grow(snake, direction)
-  grown_snake = snake.dup
-  grown_snake.push(new_position(grown_snake[-1], direction))
-  grown_snake
+  snake + [new_position(snake.last, direction)]
 end
 
 def new_food(food, snake, dimension)
-  (food_x, food_y) = snake[0]
+  all_xs = (0...dimensions[:width]).to_a
+  all_ys = (0...dimensions[:height]).to_a
 
-  while snake.include? [food_x, food_y]
-    food_x = rand(0..dimension[:width] - 1)
-    food_y = rand(0..dimension[:height] - 1)
-  end
-
-  [food_x, food_y]
+  valid = all_xs.product(all_ys) - (snake + food)
+  valid.sample
 end
 
 def obstacle_ahead?(snake, direction, dimensions)
-  position_ahead = new_position(snake[-1], direction)
-  snake.include? position_ahead or out_of_bounds?(position_ahead, dimensions)
+  position_ahead = new_position(snake.last, direction)
+
+  snake_ahead?(snake, position_ahead) or
+    out_of_bounds?(position_ahead, dimensions)
 end
 
 def danger?(snake, direction, dimensions)
   obstacle_ahead?(snake, direction, dimensions) or
-  obstacle_ahead?(move(snake, direction), direction, dimensions)
+    obstacle_ahead?(move(snake, direction), direction, dimensions)
 end
 
 def out_of_bounds?(position, dimensions)
-  position[0] < 0 or
-  position[1] < 0 or
-  position[0] >= dimensions[:width] or
-  position[1] >= dimensions[:height]
+  not in_bounds?(position, dimensions)
+end
+
+def in_bounds?(position, dimensions)
+  position.first.between?(0, dimensions[:width] - 1) and
+    position.last.between?(0, dimensions[:height] - 1)
 end
 
 def new_position(old_position, direction)
-  [old_position[0] + direction[0], old_position[1] + direction[1]]
+  snake_x, snake_y = old_position
+  direction_x, direction_y = direction
+
+  [snake_x + direction_x, snake_y + direction_y]
+end
+
+def snake_ahead?(snake, position_ahead)
+  snake.include?(position_ahead)
 end
