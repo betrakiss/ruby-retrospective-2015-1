@@ -126,8 +126,8 @@ module DrunkenMathematician
     nth_fibonacci = FibonacciSequence.new(n).to_a.last
 
     sum = 0
-    RationalSequence.new(n).take_while do |n|
-      sum += n
+    RationalSequence.new(nth_fibonacci).take_while do |m|
+      sum += m
       sum <= nth_fibonacci
     end
   end
