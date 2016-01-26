@@ -111,38 +111,29 @@ class FibonacciSequence
 end
 
 module DrunkenMathematician
-  module_function
+  extend self
 
   def meaningless(n)
-    rationals = RationalSequence.new(n).to_a
-    primes = rationals.select { |rat| rat.numerator.prime? or rat.denominator.prime? }
-    not_primes = rationals - primes
+    primes, not_primes = RationalSequence.new(n).
+      partition { |r| r.numerator.prime? or r.denominator.prime? }
 
-    primes_sum = primes.reduce { |a, b| a * b }
-    primes_sum = 1 if not primes_sum
-
-    primes_sum / not_primes.reduce { |a, b| a * b }
+    primes.reduce(1, :*) / not_primes.reduce(1, :*)
   end
 
   def aimless(n)
-    primes = PrimeSequence.new(n).to_a
-    primes = primes.each_slice(2).to_a
-
-    primes[-1] << 1 if primes[-1].count == 1
-    rationals = primes.map { |prime| Rational(prime[0], prime[1]) }
-    rationals.reduce { |a, b| a + b }
+    PrimeSequence.new(n).
+      each_slice(2).
+      map { |a, b| Rational(a, b || 1) }.
+      reduce(:+)
   end
 
   def worthless(n)
-    nth_fibonacci = FibonacciSequence.new(n).to_a[-1]
-    rationals = RationalSequence.new(n).to_a
+    nth_fibonacci = FibonacciSequence.new(n).to_a.last
 
-    sum = rationals.reduce { |a, b| a + b }
-    while sum > nth_fibonacci
-      rationals.pop
-      sum = rationals.reduce { |a, b| a + b }
+    sum = 0
+    RationalSequence.new(n).take_while do |n|
+      sum += n
+      sum <= nth_fibonacci
     end
-
-    rationals
   end
 end
