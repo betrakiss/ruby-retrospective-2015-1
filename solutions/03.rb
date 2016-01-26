@@ -71,6 +71,7 @@ class PrimeSequence
       each(&block)
   end
 
+  private
   def all_primes
     current = 2
 
@@ -97,6 +98,7 @@ class FibonacciSequence
       each(&block)
   end
 
+  private
   def all_fibonacci
     current, previous = @second, @first
 
