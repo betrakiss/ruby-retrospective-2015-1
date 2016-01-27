@@ -1,22 +1,9 @@
-
-###
-### Abstract
-###
-
-class Card
+class Card < Struct.new(:rank, :suit)
   SUITS = [:diamonds, :spades, :clubs, :hearts].freeze
   RANKS = Hash[((2..10).to_a + [:jack, :queen, :king, :ace])
               .map.with_index.to_a]
 
-  attr_reader :rank
-  attr_reader :suit
-
-  def initialize(rank, suit)
-    @rank = rank
-    @suit = suit
-  end
-
-  def to_s()
+  def TOTAL_CARDS
     "#{@rank.capitalize rescue @rank} of #{@suit.capitalize}"
   end
 
@@ -32,58 +19,58 @@ class Deck
     @cards = cards ? cards.dup : generate_all_cards()
   end
 
-  def size()
+  def size
     @cards.size
   end
 
-  def draw_top_card()
+  def draw_top_card
     @cards.shift
   end
 
-  def draw_bottom_card()
+  def draw_bottom_card
     @cards.pop
   end
 
-  def top_card()
+  def top_card
     @cards.first
   end
 
-  def bottom_card()
+  def bottom_card
     @cards.last
   end
 
-  def shuffle()
+  def shuffle
     @cards.shuffle!
   end
 
-  def sort()
-    power = ranks()
+  def sort
+    power = ranks
     @cards.sort! { |a, b| [b.suit, power[b.rank]] <=> [a.suit, power[a.rank]] }
   end
 
-  def to_s()
+  def to_s
     each { |card| card.to_s }
   end
 
-  def deal()
+  def deal
      hand = []
-     hand_size().times { hand << draw_top_card unless size() == 0 }
+     hand_size.times { hand << draw_top_card unless size() == 0 }
 
     hand_class.new(hand)
   end
 
-  def each()
+  def each
     return @cards.each unless block_given?
 
     @cards.each { |card| yield card }
   end
 
-  def ranks()
+  def ranks
     Card::RANKS
   end
 
-  def generate_all_cards()
-    ranks().keys.product(Card::SUITS).map { |r, s| Card.new(r, s) }
+  def generate_all_cards
+    ranks.keys.product(Card::SUITS).map { |r, s| Card.new(r, s) }
   end
 end
 
@@ -96,30 +83,23 @@ class Hand
     @cards = cards
   end
 
-  def size()
+  def size
     @cards.size
   end
 
-  def each()
-    return @cards.each unless block_given?
-    @cards.each { |card| yield card }
+  def each(&block)
+    @cards.each(&block)
   end
 end
-
-######################
-
-#####
-##### War
-#####
 
 class WarHand < Hand
   ALLOW_FACE_UP_COUNT = 3
 
-  def play_card()
+  def play_card
     @cards.delete(@cards.sample)
   end
 
-  def allow_face_up?()
+  def allow_face_up?
     size() <= ALLOW_FACE_UP_COUNT
   end
 end
@@ -128,24 +108,18 @@ class WarDeck < Deck
   HAND_SIZE = 26
   TOTAL_CARDS = 52
 
-  def hand_size()
+  def hand_size
     HAND_SIZE
   end
 
-  def hand_class()
+  def hand_class
     WarHand
   end
 
-  def ranks()
+  def ranks
     Card::RANKS
   end
 end
-
-##########################
-
-#####
-##### Belote
-#####
 
 class BeloteHand < Hand
   CARRE_COUNT = 4
@@ -159,7 +133,7 @@ class BeloteHand < Hand
     highest
   end
 
-  def belote?()
+  def belote?
     kings = select { |card| card.rank == :king }
     kings.each do |king|
       match = select do |card|
@@ -172,27 +146,27 @@ class BeloteHand < Hand
     false
   end
 
-  def tierce?()
+  def tierce?
     n_in_a_row?(3)
   end
 
-  def quarte?()
+  def quarte?
     n_in_a_row?(4)
   end
 
-  def quint?()
+  def quint?
     n_in_a_row?(5)
   end
 
-  def carre_of_jacks?()
+  def carre_of_jacks?
     carre_of_x?(:jack)
   end
 
-  def carre_of_nines?()
+  def carre_of_nines?
     carre_of_x?(9)
   end
 
-  def carre_of_aces?()
+  def carre_of_aces?
     carre_of_x?(:ace)
   end
 
@@ -228,24 +202,18 @@ class BeloteDeck < Deck
   HAND_SIZE = 8
   TOTAL_CARDS = 32
 
-  def hand_size()
+  def hand_size
     HAND_SIZE
   end
 
-  def hand_class()
+  def hand_class
     BeloteHand
   end
 
-  def ranks()
+  def ranks
     RANKS
   end
 end
-
-#######################
-
-#####
-##### SixtySix
-#####
 
 class SixtySixHand < Hand
   def twenty?(trump_suit)
@@ -275,15 +243,15 @@ class SixtySixDeck < Deck
   HAND_SIZE = 6
   TOTAL_CARDS = 24
 
-  def hand_size()
+  def hand_size
     HAND_SIZE
   end
 
-  def hand_class()
+  def hand_class
     SixtySixHand
   end
 
-  def ranks()
+  def ranks
     RANKS
   end
 end
