@@ -147,31 +147,31 @@ class BeloteHand < Hand
   end
 
   def tierce?
-    n_in_a_row?(3)
+    consecutive_cards?(3)
   end
 
   def quarte?
-    n_in_a_row?(4)
+    consecutive_cards?(4)
   end
 
   def quint?
-    n_in_a_row?(5)
+    consecutive_cards?(5)
   end
 
   def carre_of_jacks?
-    carre_of_x?(:jack)
+    carre?(:jack)
   end
 
   def carre_of_nines?
-    carre_of_x?(9)
+    carre?(9)
   end
 
   def carre_of_aces?
-    carre_of_x?(:ace)
+    carre?(:ace)
   end
 
   private
-  def n_in_a_row?(amount)
+  def consecutive_cards?(amount)
     power = BeloteDeck::RANKS
 
     grouped = @cards.sort! { |a, b| power[a.rank] <=> power[b.rank] }
@@ -192,7 +192,7 @@ class BeloteHand < Hand
     end
   end
 
-  def carre_of_x?(rank)
+  def carre?(rank)
     select { |card| card.rank == rank }.size == CARRE_COUNT
   end
 end
