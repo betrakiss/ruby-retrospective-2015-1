@@ -68,7 +68,7 @@ class Deck
   end
 
   def to_s
-    each { |card| card.to_s }
+    @cards.map(&:to_s).join("\n")
   end
 
   def deal
@@ -112,7 +112,7 @@ class WarDeck < Deck
   end
 
   def hand_class
-    WarHand
+    Hand
   end
 
   def ranks
@@ -191,7 +191,7 @@ class BeloteDeck < Deck
 
     def are_following_numbers?(numbers)
       numbers.each_cons(2).all? do |a, b|
-        BeloteDeck::RANKS[b.rank] - BeloteDeck::RANKS[a.rank] == 1
+        RANKS[b.rank] - RANKS[a.rank] == 1
       end
     end
 
@@ -205,7 +205,7 @@ class BeloteDeck < Deck
   end
 
   def hand_class
-    BeloteHand
+    Hand
   end
 
   def ranks
@@ -218,7 +218,7 @@ class SixtySixDeck < Deck
   HAND_SIZE = 6
   TOTAL_CARDS = 24
 
-  class SixtySixHand < Hand
+  class Hand < Deck::Hand
     def twenty?(trump_suit)
       kings_and_queens?(trump_suit, ->(x, y) { x != y })
     end
@@ -246,7 +246,7 @@ class SixtySixDeck < Deck
   end
 
   def hand_class
-    SixtySixHand
+    Hand
   end
 
   def ranks
