@@ -1,10 +1,4 @@
 class Card < Struct.new(:rank, :suit)
-  SUITS = [:diamonds, :spades, :clubs, :hearts].freeze
-  RANKS = Hash[[2, 3, 4, 5, 6, 7, 8, 9, 10, :jack, :queen, :king, :ace].
-                map.
-                with_index.
-                to_a]
-
   def to_s
     "#{rank.capitalize rescue rank} of #{suit.capitalize}"
   end
@@ -15,6 +9,12 @@ class Card < Struct.new(:rank, :suit)
 end
 
 class Deck
+  SUITS = [:diamonds, :spades, :clubs, :hearts].freeze
+  RANKS = Hash[[2, 3, 4, 5, 6, 7, 8, 9, 10, :jack, :queen, :king, :ace].
+                map.
+                with_index.
+                to_a]
+
   class Hand
     include Enumerable
 
@@ -72,22 +72,15 @@ class Deck
   end
 
   def deal
-    hand = []
-    hand_size.times { hand << draw_top_card unless size == 0 }
-
-    hand_class.new(hand)
+    hand_class.new(@cards.shift(hand_size))
   end
 
   def each(&block)
     @cards.each(&block)
   end
 
-  def ranks
-    Card::RANKS
-  end
-
   def generate_all_cards
-    ranks.keys.product(Card::SUITS).map { |r, s| Card.new(r, s) }
+    ranks.keys.product(SUITS).map { |r, s| Card.new(r, s) }
   end
 end
 
@@ -116,7 +109,7 @@ class WarDeck < Deck
   end
 
   def ranks
-    Card::RANKS
+    RANKS
   end
 end
 
@@ -131,24 +124,16 @@ class BeloteDeck < Deck
     CARRE_COUNT = 4
 
     def highest_of_suit(suit)
-      highest = Card.new(7, :spades)
-      select { |c| c.suit == suit}.
-        each { |c| highest = c if RANKS[c.rank] > RANKS[highest.rank] }
-
-      highest
+      select { |c| c.suit == suit }.
+        sort { |a, b| [b.suit, RANKS[b.rank]] <=> [a.suit, RANKS[a.rank]] }.
+        first
     end
 
     def belote?
-      kings = select { |card| card.rank == :king }
-      kings.each do |king|
-        match = select do |card|
-          card.rank == :queen and card.suit == king.suit
-        end
-
-        return true if match.size != 0
+      Deck::SUITS.any? do |suit|
+        include?(Card.new(:king, suit)) and
+          include?(Card.new(:queen, suit))
       end
-
-      false
     end
 
     def tierce?
@@ -220,24 +205,19 @@ class SixtySixDeck < Deck
 
   class Hand < Deck::Hand
     def twenty?(trump_suit)
-      kings_and_queens?(trump_suit, ->(x, y) { x != y })
+      kings_and_queens?(Deck::SUITS - [trump_suit])
     end
 
     def forty?(trump_suit)
-      kings_and_queens?(trump_suit, ->(x, y) { x == y })
+      kings_and_queens?([trump_suit])
     end
 
     private
-    def kings_and_queens?(trump_suit, predicate)
-      kings = select { |c| c.rank == :king and predicate.(c.suit, trump_suit) }
-
-      kings.each do |king|
-        return true if @cards.any? do |card|
-          card.rank == :queen and card.suit == king.suit
-        end
+    def kings_and_queens?(allowed_suits)
+      allowed_suits.any? do |suit|
+        include?(Card.new(:king, suit)) and
+          include?(Card.new(:queen, suit))
       end
-
-      false
     end
   end
 
